@@ -52,7 +52,7 @@ creates the buy and sell buttons for each product using the following parameters
         buttons.append(GUI(root, "Button", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 + (i * 50), "sell product " + products[i].get_name(), color = "white", color2 = "black", function = lambda i = i: sell_button_pressed(i, products, string_vars, label_widgets[1].get())))
 
 
-def buy_button_pressed(i, products, string_vars, amount):
+def buy_button_pressed(product_to_sell, products, string_vars, amount):
     """
 this function should only be called by the buy button
 it takes three parameters:
@@ -61,10 +61,10 @@ it takes three parameters:
     string_vars, a list of the StringVars that are displayed on screen 
     """
     for i in range(0, check_input(amount)):
-        products[i].buy_stock()
+        products[product_to_sell].buy_stock()
     comp4v2.refresh_display_info(products, string_vars)
 
-def sell_button_pressed(i, products, string_vars, amount):
+def sell_button_pressed(product_to_sell, products, string_vars, amount):
     """
 this function should only be called by the sell button
 it takes three parameters:
@@ -73,7 +73,7 @@ it takes three parameters:
     string_vars, a list of the StringVars that are displayed on screen 
     """
     for i in range(0, int(amount)):
-        products[i].sell_stock()
+        products[product_to_sell].sell_stock()
     comp4v2.refresh_display_info(products, string_vars)
 
 def check_input(label_input):
