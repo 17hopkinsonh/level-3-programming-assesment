@@ -3,8 +3,9 @@
     Date started: 4/11/2021
     ver 2 started: 7/11/2021
     description: this component should use the previus two components to create buttons that buy and sell different products
-    Version: 2
-    Improvements since last version: now supports component 3.1, letting the user buy multiple products at a time
+    Version: 2.1
+    Improvements since last version: now breaks out of the for statement when
+    more products are brought than are left in stock
 """
 
 #libraries
@@ -52,7 +53,7 @@ creates the buy and sell buttons for each product using the following parameters
         buttons.append(GUI(root, "Button", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 + (i * 50), "sell product " + products[i].get_name(), color = "white", color2 = "black", function = lambda i = i: sell_button_pressed(i, products, string_vars, label_widgets[1].get())))
 
 
-def buy_button_pressed(product_to_sell, products, string_vars, amount):
+def buy_button_pressed(product_to_buy, products, string_vars, amount):
     """
 this function should only be called by the buy button
 it takes three parameters:
@@ -61,7 +62,9 @@ it takes three parameters:
     string_vars, a list of the StringVars that are displayed on screen 
     """
     for i in range(0, check_input(amount)):
-        products[product_to_sell].buy_stock()
+        products[product_to_buy].buy_stock()
+        if(products[product_to_buy].get_stock() == 0):
+            break
     comp4v2.refresh_display_info(products, string_vars)
 
 def sell_button_pressed(product_to_sell, products, string_vars, amount):
@@ -74,6 +77,8 @@ it takes three parameters:
     """
     for i in range(0, int(amount)):
         products[product_to_sell].sell_stock()
+        if(products[product_to_sell].get_owned() == 0):
+            break
     comp4v2.refresh_display_info(products, string_vars)
 
 def check_input(label_input):
