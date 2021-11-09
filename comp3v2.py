@@ -75,7 +75,7 @@ it takes three parameters:
     products, a list of all the products
     string_vars, a list of the StringVars that are displayed on screen 
     """
-    for i in range(0, int(amount)):
+    for i in range(0, check_input(amount)):
         products[product_to_sell].sell_stock()
         if(products[product_to_sell].get_owned() == 0):
             break

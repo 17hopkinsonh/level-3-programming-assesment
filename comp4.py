@@ -1,7 +1,7 @@
 """
     Author: Hayden Hopkinson
     Date started: 5/11/2021
-    description: 
+    description: this component should create the labels that have information on each of the products
     Version: 1
     Improvements since last version: N/A
 

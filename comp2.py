@@ -14,7 +14,7 @@ import random
 #classes
 
 class product:
-
+    #create a static variable, meaning that all instances of this class use the same variable
     money = 1000
     
     def __init__(self, name, description, starting_price = 0, starting_stock = 0):
@@ -23,6 +23,8 @@ class product:
         self._total_sold = 0
         self._total_brought = 0
         self._amount_owned = 0
+        #if no starting price was given, randomize it, else set the price to be the price that was provided.
+        #Then do the same thing for the starting stock
         if(starting_price != 0):
             self._price = starting_price
         else:
@@ -72,6 +74,7 @@ class product:
         return self.get_price() * (random.randint(new_min, new_max)/100)
 
     def buy_stock(self):
+        #check to see if the user should be able to buy the product
         if((self.get_stock() >= 1) and (product.money - self.get_price() >= 0)):
             the_price = self.get_price()
             print("product {} has been purchased for {} tokens".format(self.get_name(), the_price))
@@ -85,6 +88,7 @@ class product:
         else:
             print("the product {} is either out of stock, or you dont have enough tokens to buy it".format(self.get_name()))        
     def sell_stock(self):
+        #check to see if the user has any stock to sell
         if(self.get_owned() > 0):
             print("product {} has been sold for {} tokens".format(self.get_name(), self._price))
             self.set_stock(self.get_stock()+1)
@@ -103,6 +107,8 @@ class product:
 
 #main
 if(__name__ == "__main__"):
+    #test this component by buying/selling each product many times
+    
     products = [product("name1", "description1"), product("name2", "description2"), product("name3", "description3")]
     
     for i in range(0, 500):
