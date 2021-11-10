@@ -1,7 +1,7 @@
 """
     Author: Hayden Hopkinson
     Date started: 8/11/2021
-    description: combined all the components into one file, then made improvements based on user testing
+    description: version givien to users to test, certain values should be adjusted accordingly
     Version: 1
     Improvements since last version: N/A
 
@@ -10,7 +10,6 @@
 #libraries
 
 from tkinter import *
-from tkinter import messagebox
 import random, os, webbrowser, threading
 
 
@@ -73,7 +72,7 @@ class GUI:
 
 class Product:
     #create a static variable, meaning that all instances of this class use the same variable
-    tokens = 100
+    money = 100
     
     def __init__(self, name, description, starting_price = 0, starting_stock = 0):
         self._name = name
@@ -90,7 +89,7 @@ class Product:
         if(starting_stock != 0):
             self._stock = starting_stock
         else:
-            self._stock = random.randint(5,10)
+            self._stock = random.randint(3,7)
 
     def __repr__(self):
         return "This product has the name {}, is described as {}, has a current price of {} and has been brought {} times and sold {} times".format(self._name, self._desc, self._price, self._total_brought, self._total_sold)
@@ -138,15 +137,15 @@ class Product:
 
     def buy_stock(self):
         #check to see if the user should be able to buy the product
-        if((self.get_stock() >= 1) and (Product.tokens - self.get_price() >= 0)):
+        if((self.get_stock() >= 1) and (Product.money - self.get_price() >= 0)):
             the_price = self.get_price()
             print("product {} has been purchased for {} tokens".format(self.get_name(), the_price))
             self.set_stock(self.get_stock()-1)
             #self.set_price(self.randomize_price(100, 170))
             self.set_brought(self.get_brought() + 1)
             self.set_owned(self.get_owned() + 1)
-            Product.tokens -= the_price
-        else:   
+            Product.money -= the_price
+        else:
             print("the product {} is either out of stock, or you dont have enough tokens to buy it".format(self.get_name()))        
     def sell_stock(self):
         #check to see if the user has any stock to sell
@@ -156,7 +155,7 @@ class Product:
             #self.set_price(self.randomize_price(66, 100))
             self.set_sold(self.get_sold()+1)
             self.set_owned(self.get_owned() - 1)
-            Product.tokens += self.get_price()
+            Product.money += self.get_price()
         else:
             print("you can't sell product {} since you dont own it".format(self.get_name()))
 
@@ -208,8 +207,8 @@ creates the buy and sell buttons for each product using the following parameters
     buttons = []
     #create and append a buy and sell button for each product to the list of buttons
     for i in range(0, len(products)):
-        buttons.append(GUI(root, "Button", 150, 40, int(dimentions[0])/8, int(dimentions[1])/3*2 + (i * 50), "Buy product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: buy_button_pressed(i, products, string_vars, label_widgets[0].get())))
-        buttons.append(GUI(root, "Button", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 + (i * 50), "Sell product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: sell_button_pressed(i, products, string_vars, label_widgets[1].get())))
+        buttons.append(GUI(root, "Button", 150, 40, int(dimentions[0])/8, int(dimentions[1])/3*2 + (i * 50), "buy product " + products[i].get_name(), color = "white", color2 = "black", function = lambda i = i: buy_button_pressed(i, products, string_vars, label_widgets[0].get())))
+        buttons.append(GUI(root, "Button", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 + (i * 50), "sell product " + products[i].get_name(), color = "white", color2 = "black", function = lambda i = i: sell_button_pressed(i, products, string_vars, label_widgets[1].get())))
 
 
 def buy_button_pressed(product_to_buy, products, string_vars, amount):
@@ -221,13 +220,9 @@ it takes three parameters:
     string_vars, a list of the StringVars that are displayed on screen 
     """
     for i in range(0, check_input(amount)):
-        if(products[product_to_buy].get_stock() == 0):
-            messagebox.showerror("Error", "There is no remaining stock of that product")
-            break
-        elif(Product.tokens - products[product_to_buy].get_price() < 0):
-            messagebox.showerror("Error", "You dont have enough tokens")
-            break
         products[product_to_buy].buy_stock()
+        if(products[product_to_buy].get_stock() == 0):
+            break
     refresh_display_info(products, string_vars)
 
 def sell_button_pressed(product_to_sell, products, string_vars, amount):
@@ -239,10 +234,9 @@ it takes three parameters:
     string_vars, a list of the StringVars that are displayed on screen 
     """
     for i in range(0, check_input(amount)):
-        if(products[product_to_sell].get_owned() == 0):
-            messagebox.showerror("Error", "You dont have any of that product to sell")
-            break
         products[product_to_sell].sell_stock()
+        if(products[product_to_sell].get_owned() == 0):
+            break
     refresh_display_info(products, string_vars)
 
 def check_input(label_input):
@@ -252,10 +246,6 @@ removing any non-int characters
     """
     #code from https://www.kite.com/python/answers/how-to-remove-all-non-numeric-characters-from-a-string-in-python
     numeric_string = re.sub("[^0-9]", "", label_input)
-
-    if(numeric_string == ""):
-        messagebox.showerror("error","you need to enter numbers into the text boxes")
-
     try:
         return int(numeric_string)
     except:
@@ -330,16 +320,16 @@ takes two parameters:
     """
     display_texts = string_vars
     #at position 0 of the string_vars list there should be a StringVar, update this StringVar to display the amount of tokens the user currently has
-    display_texts[0].set("You have {} tokens".format(Product.tokens))
+    display_texts[0].set("You have {} tokens".format(Product.money))
     #at positions 1-5 of the string_vars list there should be a list of StringVars,
     #each of these lists should have a length of however many products there are.
     #update each of these StringVars to have the relevent information
     for i in range(len(products)):
-        display_texts[1][i].set("Total brought: " + str(products[i].get_brought()))
-        display_texts[2][i].set("Stock remaining: " + str(products[i].get_stock()))
-        display_texts[3][i].set("Price: " + str(products[i].get_price())+ " tokens")
-        display_texts[4][i].set("Amount owned: " + str(products[i].get_owned()))
-        display_texts[5][i].set("Total sold: " + str(products[i].get_sold()))
+        display_texts[1][i].set("total brought: " + str(products[i].get_brought()))
+        display_texts[2][i].set("stock remaining: " + str(products[i].get_stock()))
+        display_texts[3][i].set("price: " + str(products[i].get_price())+ " tokens")
+        display_texts[4][i].set("amount owned: " + str(products[i].get_owned()))
+        display_texts[5][i].set("total sold: " + str(products[i].get_sold()))
         
     return display_texts
 
@@ -351,11 +341,8 @@ two parameters are needed:
     dimentions, which should be a tuple/list with width at position 0, and height at position 1
     """
     entries = []
-    entries.append(GUI(root, "Entry", 150, 40, int(dimentions[0])/8, int(dimentions[1])/3*2 - 50))
-    GUI(root, "Label", 150, 40, int(dimentions[0])/8, int(dimentions[1])/3*2 - 90, text = "Enter amount to buy:")
-    entries.append(GUI(root, "Entry", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 - 50))
-    GUI(root, "Label", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 - 90, text = "Enter amount to sell:")
-
+    entries.append(GUI(root, "Entry", 150, 40, int(dimentions[0])/8, int(dimentions[1])/3*2 - 50, text = "enter amount to buy:"))
+    entries.append(GUI(root, "Entry", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 - 50, text = "enter amount to sell:"))
     return entries
 
 
@@ -398,7 +385,7 @@ this takes four parameters:
     res, a tuple/list with the width of the root at index 0, and the height of the root at index 1
     """
     image = GUI(root, "PhotoImage", 300, 200, int(res[0])/2, int(res[1])/18, image = default_img)
-    credit_button = GUI(root, "Button", 300, 50, int(res[0])/2, int(res[1])/18+200, text = "Image source", function = lambda: open_page(default_link))
+    credit_button = GUI(root, "Button", 300, 50, int(res[0])/2, int(res[1])/18+200, text = "image source", function = lambda: open_page(default_link))
     return [image, credit_button]
 
 
@@ -470,43 +457,35 @@ seconds, the time, in seconds, that the function should wait before repeating
     refresh_display_info(products, string_vars)
     threading.Timer(seconds, lambda:repeat(products, string_vars, seconds)).start()
 
-def final_setup():
+
+#main
+
+if(__name__ == "__main__"):
     width = "1000"
     height = "600"
 
-
     widgets = []
 
-    #this list needs to be in alphabetical order as that's the order the image files will be pulled
-    product_names = ["keyboards", "monitors", "mouses"]
-    #this list was never used, it should be parallel with the product_names list, but as long as its a list of string and has the same length as the products name list it shouldn't result in errors
-    product_descriptions = ["you use these to type", "you need this to see what you're doing", "you need this to move the curser"]
-    #this list list needs to be parallel to the product_names list, it should have a link to the respective image 
     links = [
     "https://publicdomainvectors.org/en/free-clipart/Vector-graphics-of-AZERTY-computer-keyboard/13672.html",
     "https://publicdomainvectors.org/en/free-clipart/LCD-screen-with-shadow-vector-graphics/13214.html",
     "https://publicdomainvectors.org/en/free-clipart/Photorealistic-vector-image-of-computer-mouse/12989.html"
     ]
+    product_names = ["keyboards", "monitors", "mouses"]
+    product_descriptions = ["you use these to type", "you need this to see what you're doing", "you need this to move the curser"]
     
     root = setup_root(width, height)
-
     entries = create_entries(root, (width, height))
-
     for i in range(0, len(entries)):
         widgets.append(entries[i].get_widget())
 
-    loop_stuff = setup_UI(root, width, height, widgets, product_names, product_descriptions)
+    loopstuff = setup_UI(root, width, height, widgets, product_names, product_descriptions)
+
 
     gallery = create_gallery(root, get_images(), links, (width, height))
 
-    repeat(loop_stuff[0], loop_stuff[1], 15)
+    repeat(loopstuff[0], loopstuff[1], 15)
 
     root.mainloop()
-
-
-#main
-
-if(__name__ == "__main__"):
-    final_setup()
 
     
