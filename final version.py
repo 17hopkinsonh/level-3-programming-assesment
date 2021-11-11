@@ -20,7 +20,7 @@ class GUI:
     #create a static variable, meaning that all instances of this class use the same variable    
     current_img = 0
 
-    def __init__(self, parent, graphic_type, width, height, x_placement, y_placement, text = "", color = None, color2 = None, function = "", textvar = "", image = ""):
+    def __init__(self, parent, graphic_type, width, height, x_placement, y_placement, text = "", color = None, color2 = None, function = "", text_var = "", image = ""):
         
         self._type = graphic_type
         self._parent = parent
@@ -28,7 +28,7 @@ class GUI:
         self._dimentions = (width, height)
         self._location = (x_placement, y_placement)
         self._function = function
-        self._textvar = textvar
+        self._text_var = text_var
         self._colors = (color, color2)
 
         #if the type provided was a Photoimage, create a Photoimage with the provided file, and then make a label that displays the photoimage
@@ -39,12 +39,12 @@ class GUI:
             #if a TextVar was not provided set the text to be the provided text, else a TextVar must've been provided, set the textvariable to be the provided TextVar
             #the difference between using a textvar or a text is that the textvar can be more easily updated later on,
             #as if the text stored in the TextVar is updated, the displayed text will also change
-            if self._textvar == "":
+            if self._text_var == "":
                 #eval is used here to change the provided graphic_type from a string to code,
                 #for example if "Label" was passed as the graphic type the code runs Label(self._parent, text = self._text)
                 self._widget = eval(check_type(self._type))(self._parent, text = self._text)
             else:
-                self._widget = eval(check_type(self._type))(self._parent, textvariable = self._textvar)
+                self._widget = eval(check_type(self._type))(self._parent, textvariable = self._text_var)
         #place the widget at the provided location, with the provided width and height, anchored at the centre northmost point of the widget 
         self._widget.place(anchor = N, width = self._dimentions[0], height = self._dimentions[1], x = self._location[0], y = self._location[1])
 
@@ -86,11 +86,15 @@ class Product:
         if(starting_price != 0):
             self._price = starting_price
         else:
-            self._price = random.randint(10,30)
+            MIN_RAND = 10
+            MAX_RAND = 30
+            self._price = random.randint(MIN_RAND, MAX_RAND)
         if(starting_stock != 0):
             self._stock = starting_stock
         else:
-            self._stock = random.randint(5,10)
+            MIN_RAND = 5
+            MAX_RAND = 10            
+            self._stock = random.randint(MIN_RAND, MAX_RAND)
 
     def __repr__(self):
         return "This product has the name {}, is described as {}, has a current price of {} and has been brought {} times and sold {} times".format(self._name, self._desc, self._price, self._total_brought, self._total_sold)
@@ -130,10 +134,14 @@ class Product:
 
     def randomize_price(self, new_min, new_max):
         new_price = self.get_price() * (random.randint(new_min, new_max)/100)
-        if(new_price > 1000):
-            new_price = 1000
-        elif(new_price == 0):
-            new_price = 1
+
+        MIN_PRICE = 1
+        MAX_PRICE = 1000
+        
+        if(new_price > MAX_PRICE):
+            new_price = MAX_PRICE
+        elif(new_price < MIN_PRICE):
+            new_price = MIN_PRICE
         return new_price
 
     def buy_stock(self):
@@ -142,18 +150,16 @@ class Product:
             the_price = self.get_price()
             print("product {} has been purchased for {} tokens".format(self.get_name(), the_price))
             self.set_stock(self.get_stock()-1)
-            #self.set_price(self.randomize_price(100, 170))
             self.set_brought(self.get_brought() + 1)
             self.set_owned(self.get_owned() + 1)
             Product.tokens -= the_price
-        else:   
+        else:
             print("the product {} is either out of stock, or you dont have enough tokens to buy it".format(self.get_name()))        
     def sell_stock(self):
         #check to see if the user has any stock to sell
         if(self.get_owned() > 0):
             print("product {} has been sold for {} tokens".format(self.get_name(), self._price))
             self.set_stock(self.get_stock()+1)
-            #self.set_price(self.randomize_price(66, 100))
             self.set_sold(self.get_sold()+1)
             self.set_owned(self.get_owned() - 1)
             Product.tokens += self.get_price()
@@ -174,7 +180,7 @@ def check_type(provided_type):
     else:
         #an invalid type was provided, raise an exception that shows the accepted types that are currently accepted
         accepteds = ""
-        for i in range(0, len(accepted_types)):
+        for i in range(len(accepted_types)):
             accepteds = accepteds + " " + accepted_types[i] if i == (len(accepted_types) - 1) else accepteds + " " + accepted_types[i] + ","
         raise Exception("The type provided was not an accepted type, accepted types are:" + accepteds)
 
@@ -192,7 +198,7 @@ these should be parallel lists of the same length
         raise Exception("Lists of different lengths were given")
 
     products = []
-    for i in range(0, len(names)):
+    for i in range(len(names)):
         products.append(Product(names[i], descriptions[i]))
     return products 
 
@@ -206,10 +212,14 @@ creates the buy and sell buttons for each product using the following parameters
     string_vars, a list of all the different StringVars, should be created with comp4's "create_display_info function"
     """
     buttons = []
+    BUTTON_WIDTH = 150
+    BUTTON_HEIGHT = 40
+    GAP = 50
+    
     #create and append a buy and sell button for each product to the list of buttons
-    for i in range(0, len(products)):
-        buttons.append(GUI(root, "Button", 150, 40, int(dimentions[0])/8, int(dimentions[1])/3*2 + (i * 50), "Buy product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: buy_button_pressed(i, products, string_vars, label_widgets[0].get())))
-        buttons.append(GUI(root, "Button", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 + (i * 50), "Sell product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: sell_button_pressed(i, products, string_vars, label_widgets[1].get())))
+    for i in range(len(products)):
+        buttons.append(GUI(root, "Button", BUTTON_WIDTH, BUTTON_HEIGHT, int(dimentions[0])/8, int(dimentions[1])/3*2 + (i * GAP), "Buy product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: buy_button_pressed(i, products, string_vars, label_widgets[0].get())))
+        buttons.append(GUI(root, "Button", BUTTON_WIDTH, BUTTON_HEIGHT, int(dimentions[0])/8*7, int(dimentions[1])/3*2 + (i * GAP), "Sell product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: sell_button_pressed(i, products, string_vars, label_widgets[1].get())))
 
 
 def buy_button_pressed(product_to_buy, products, string_vars, amount):
@@ -220,7 +230,7 @@ it takes three parameters:
     products, a list of all the products
     string_vars, a list of the StringVars that are displayed on screen 
     """
-    for i in range(0, check_input(amount)):
+    for i in range(check_input(amount)):
         if(products[product_to_buy].get_stock() == 0):
             messagebox.showerror("Error", "There is no remaining stock of that product")
             break
@@ -238,7 +248,7 @@ it takes three parameters:
     products, a list of all the products
     string_vars, a list of the StringVars that are displayed on screen 
     """
-    for i in range(0, check_input(amount)):
+    for i in range(check_input(amount)):
         if(products[product_to_sell].get_owned() == 0):
             messagebox.showerror("Error", "You dont have any of that product to sell")
             break
@@ -305,17 +315,20 @@ takes three functions:
     products, a list of all the products this function should create information about, this should've been made with the create_products() function
 it returns a list containing all of the StringVars
     """
+    LABEL_WIDTH = 120
+    LABEL_HEIGHT = 40
+    GAP = 50
     string_vars = [StringVar(), [], [], [], [], []]
-    GUI(root, "Label", 120, 40, int(dimentions[0])/2, 0, textvar = string_vars[0])
+    GUI(root, "Label", LABEL_WIDTH, LABEL_HEIGHT, int(dimentions[0])/2, 0, text_var = string_vars[0])
     
-    for i in range(0, len(products)):
+    for i in range(len(products)):
         #for each product
         for i2 in range(len(string_vars)-1):
             #for each StringVar excluding the first (the first one displays the amount of credits the user has)
             #append a StringVar to the list inside the string_vars list at position i2+1
             string_vars[i2+1].append(StringVar())
             #create a label using the StringVar that was just created as the textvar
-            GUI(root, "Label", 120, 40, int(dimentions[0])/8*(2+i2), int(dimentions[1])/3*2 + (i * 50), textvar = string_vars[i2+1][i])
+            GUI(root, "Label", LABEL_WIDTH, LABEL_HEIGHT, int(dimentions[0])/8*(2+i2), int(dimentions[1])/3*2 + (i * GAP), text_var = string_vars[i2+1][i])
 
     #since all the string_vars currently have no text, update them
     string_vars = refresh_display_info(products, string_vars)
@@ -350,11 +363,16 @@ two parameters are needed:
     root, the parent that the entry boxes should be placed on
     dimentions, which should be a tuple/list with width at position 0, and height at position 1
     """
+    WIDTH = 150
+    HEIGHT = 40
+    ENTRY_SPACING = 50
+    LABEL_SPACING = 90
+    
     entries = []
-    entries.append(GUI(root, "Entry", 150, 40, int(dimentions[0])/8, int(dimentions[1])/3*2 - 50))
-    GUI(root, "Label", 150, 40, int(dimentions[0])/8, int(dimentions[1])/3*2 - 90, text = "Enter amount to buy:")
-    entries.append(GUI(root, "Entry", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 - 50))
-    GUI(root, "Label", 150, 40, int(dimentions[0])/8*7, int(dimentions[1])/3*2 - 90, text = "Enter amount to sell:")
+    entries.append(GUI(root, "Entry", WIDTH, HEIGHT, int(dimentions[0])/8, int(dimentions[1])/3*2 - ENTRY_SPACING))
+    GUI(root, "Label", WIDTH, HEIGHT, int(dimentions[0])/8, int(dimentions[1])/3*2 - LABEL_SPACING, text = "Enter amount to buy:")
+    entries.append(GUI(root, "Entry", WIDTH, HEIGHT, int(dimentions[0])/8*7, int(dimentions[1])/3*2 - ENTRY_SPACING))
+    GUI(root, "Label", WIDTH, HEIGHT, int(dimentions[0])/8*7, int(dimentions[1])/3*2 - LABEL_SPACING, text = "Enter amount to sell:")
 
     return entries
 
@@ -397,8 +415,13 @@ this takes four parameters:
     default_link, the first link parallel to the images, will be the first assigned link when the program is run
     res, a tuple/list with the width of the root at index 0, and the height of the root at index 1
     """
-    image = GUI(root, "PhotoImage", 300, 200, int(res[0])/2, int(res[1])/18, image = default_img)
-    credit_button = GUI(root, "Button", 300, 50, int(res[0])/2, int(res[1])/18+200, text = "Image source", function = lambda: open_page(default_link))
+
+    WIDTH = 300
+    PHOTO_HEIGHT = 200
+    BUTTON_HEIGHT = 50
+    
+    image = GUI(root, "PhotoImage", WIDTH, PHOTO_HEIGHT, int(res[0])/2, int(res[1])/18, image = default_img)
+    credit_button = GUI(root, "Button", WIDTH, BUTTON_HEIGHT, int(res[0])/2, int(res[1])/18 + PHOTO_HEIGHT, text = "Image source", function = lambda: open_page(default_link))
     return [image, credit_button]
 
 
@@ -412,9 +435,13 @@ it takes five parameters:
     links, a list of links to the website where the related image is from
     img_widget, a list containing the label widget that displays the image, and the button widget that links to the source of the image
     """
+    WIDTH = 100
+    HEIGHT = 80
+    HEIGHT_OF_GALLERY = 250
     buttons = []
-    buttons.append(GUI(root, "Button", 100, 80, int(res[0])/2-50, int(res[1])/18 + 250, text = "<---", function = lambda: choose_img(images, links, img_widget, False)))
-    buttons.append(GUI(root, "Button", 100, 80, int(res[0])/2+50, int(res[1])/18 + 250, text = "--->", function = lambda: choose_img(images, links, img_widget, True)))
+    
+    buttons.append(GUI(root, "Button", WIDTH, HEIGHT, int(res[0])/2-WIDTH/2, int(res[1])/18 + HEIGHT_OF_GALLERY, text = "<---", function = lambda: choose_img(images, links, img_widget, False)))
+    buttons.append(GUI(root, "Button", WIDTH, HEIGHT, int(res[0])/2+WIDTH/2, int(res[1])/18 + HEIGHT_OF_GALLERY, text = "--->", function = lambda: choose_img(images, links, img_widget, True)))
 
 
 def choose_img(images, links, img_widget, foward):
@@ -465,8 +492,12 @@ products, a list of all the products
 string_vars, a list of all the StringVars, needed for refreashing the display
 seconds, the time, in seconds, that the function should wait before repeating
     """
+
+    MINIMUM_PERCENTAGE = 66
+    MAXIMUM_PERCENTAGE = 150
+    
     for i in products:
-        i.set_price(i.randomize_price(66, 150))
+        i.set_price(i.randomize_price(MINIMUM_PERCENTAGE, MAXIMUM_PERCENTAGE))
     refresh_display_info(products, string_vars)
     threading.Timer(seconds, lambda:repeat(products, string_vars, seconds)).start()
 
@@ -487,6 +518,7 @@ def final_setup():
     "https://publicdomainvectors.org/en/free-clipart/LCD-screen-with-shadow-vector-graphics/13214.html",
     "https://publicdomainvectors.org/en/free-clipart/Photorealistic-vector-image-of-computer-mouse/12989.html"
     ]
+    SECONDS_BETWEEN_RESETS = 15
     
     root = setup_root(width, height)
 
@@ -499,7 +531,8 @@ def final_setup():
 
     gallery = create_gallery(root, get_images(), links, (width, height))
 
-    repeat(loop_stuff[0], loop_stuff[1], 15)
+
+    repeat(loop_stuff[0], loop_stuff[1], SECONDS_BETWEEN_RESETS)
 
     root.mainloop()
 
