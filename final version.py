@@ -430,7 +430,7 @@ takes four parameters:
     resolution, a tuple/list with the width of the root at index 0, and the height of the root at index 1
     """
     image_widget, gallery_height = create_image(root, images[0], links[0], resolution)
-    buttons = create_gallery_buttons(root, images, resolution, links, image_widget)
+    buttons = create_gallery_buttons(root, images, resolution, links, image_widget, gallery_height)
     return (image_widget, buttons)
 
 
