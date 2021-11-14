@@ -13,7 +13,7 @@
 from tkinter import *
 from comp1 import *
 from comp2 import *
-import comp4v2
+import comp4v2, re
 
 #classes
 

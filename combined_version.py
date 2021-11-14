@@ -10,7 +10,7 @@
 #libraries
 
 from tkinter import *
-import random, os, webbrowser, threading
+import random, os, webbrowser, threading, re
 
 
 #classes

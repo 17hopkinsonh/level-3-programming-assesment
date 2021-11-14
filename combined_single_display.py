@@ -9,7 +9,7 @@
 #libraries
 
 from tkinter import *
-import random, os, webbrowser, threading
+import random, os, webbrowser, threading, re
 
 
 #classes
@@ -140,7 +140,6 @@ class Product:
             the_price = self.get_price()
             print("product {} has been purchased for {} tokens".format(self.get_name(), the_price))
             self.set_stock(self.get_stock()-1)
-            #self.set_price(self.randomize_price(100, 170))
             self.set_brought(self.get_brought() + 1)
             self.set_owned(self.get_owned() + 1)
             Product.money -= the_price
@@ -151,7 +150,6 @@ class Product:
         if(self.get_owned() > 0):
             print("product {} has been sold for {} tokens".format(self.get_name(), self._price))
             self.set_stock(self.get_stock()+1)
-            #self.set_price(self.randomize_price(66, 100))
             self.set_sold(self.get_sold()+1)
             self.set_owned(self.get_owned() - 1)
             Product.money += self.get_price()
@@ -196,16 +194,8 @@ these should be parallel lists of the same length
 
 
 def create_buttons(root, dimentions, products, string_vars, label_widgets, info_labels):
-    """
-creates the buy and sell buttons for each product using the following parameters:
-    root, the canvas to apply the buttons to
-    dimentions, tuple/list containing the width and height of the canvas
-    products, a list of each of the different products that can be brought/sold
-    string_vars, a list of all the different StringVars, should be created with comp4's "create_display_info function"
-    """
+    
     buttons = []
-    #create and append a buy and sell button for each product to the list of buttons
-    #for i in range(0, len(products)):
 
     buy_string_var = StringVar()
     buy_string_var.set("buy product " + products[0].get_name())
@@ -218,13 +208,7 @@ creates the buy and sell buttons for each product using the following parameters
     return buttons, [buy_string_var, sell_string_var]
 
 def buy_button_pressed(products, string_vars, amount, info_labels):
-    """
-this function should only be called by the buy button
-it takes three parameters:
-    i, the position of the button that was pressed
-    products, a list of all the products
-    string_vars, a list of the StringVars that are displayed on screen 
-    """
+
     for i in range(0, check_input(amount)):
         products[GUI.get_img_value()].buy_stock()
         if(products[GUI.get_img_value()].get_stock() == 0):
@@ -232,13 +216,7 @@ it takes three parameters:
     refresh_display_info(products, string_vars, info_labels)
 
 def sell_button_pressed(products, string_vars, amount, info_labels):
-    """
-this function should only be called by the sell button
-it takes three parameters:
-    i, the position of the button that was pressed
-    products, a list of all the products
-    string_vars, a list of the StringVars that are displayed on screen 
-    """
+
     for i in range(0, check_input(amount)):
         products[GUI.get_img_value()].sell_stock()
         if(products[GUI.get_img_value()].get_owned() == 0):
@@ -281,7 +259,6 @@ takes six functions:
     label_widgets, a list of the label widgets that should have text containing the amount of products to buy/sell at a time
     product_names, a list containing names of each of the products
     product_descriptions, a list of descriptions for each product, should be parallel to the product_names list
-also returns a list of the products that were created using the product_names and product_descriptions parameters
     """
     products = create_products(product_names, product_descriptions)
     
@@ -303,7 +280,6 @@ takes three functions:
     root, the parent window to assign the labels objects to
     dimentions, a tuple/list that contains the width of the root at index 0, and the height of the root at index 1
     products, a list of all the products this function should create information about, this should've been made with the create_products() function
-it returns a list containing all of the StringVars
     """
     string_vars = [StringVar(), [], [], [], [], []]
     GUI(root, "Label", 120, 40, int(dimentions[0])/2, 0, textvar = string_vars[0])
@@ -319,17 +295,11 @@ it returns a list containing all of the StringVars
     string_vars = refresh_display_info(products, string_vars, info_labels)
     return string_vars, info_labels
 
-def refresh_display_info(products, string_vars, info_labels):
-    """
-this function should update each of the label's StringVars containing information, setting their text to be up-to-date
-takes two parameters:
-    products, a list of products that has been made, this should've been made with the create_products() function
-    string_vars, a list of all the StringVars that needs to be updated, this should've been made with the create_display_info() function
-    """   
+def refresh_display_info(products, string_vars, info_labels):   
     display_texts = string_vars
     #at position 0 of the string_vars list there should be a StringVar, update this StringVar to display the amount of tokens the user currently has
     display_texts[0].set("You have {} tokens".format(Product.money))
-    #at positions 1-5 of the string_vars list there should be a list of StringVars,
+    #at positions 1-5 of the string_vars list there should be lists of StringVars,
     #each of these lists should have a length of however many products there are.
     #update each of these StringVars to have the relevent information
     for i in range(len(products)):
@@ -356,10 +326,6 @@ def update_info_labels(info_labels, products, string_vars):
 
 
 def refresh_buttons(products, button_strings, buttons, string_vars, label_widgets, info_labels):
-    """
-
-    """
-    #product_to_buy, products, string_vars, amount
     buttons[0].get_widget().config(command = lambda: buy_button_pressed(products, string_vars, label_widgets[0].get(), info_labels))
     button_strings[0].set("buy product " + products[GUI.get_img_value()].get_name())
     buttons[1].get_widget().config(command = lambda: sell_button_pressed(products, string_vars, label_widgets[1].get(), info_labels))
@@ -395,14 +361,6 @@ gets and returns a list of images that are stored in the same filepath as this f
 
 
 def create_gallery(root, images, links, resolution, products, string_vars, button_strings, label_widgets, info_labels):
-    """
-creates the image, credit button, and buttons to scroll throught the images
-takes four parameters:
-    root, the parent window to assign the GUI objects to
-    images, a list of images to display
-    links, a list of links to the website where the related image is from
-    resolution, a tuple/list with the width of the root at index 0, and the height of the root at index 1
-    """
     image_widget = create_image(root, images[0], links[0], resolution)
     buttons = create_gallery_buttons(root, images, resolution, links, image_widget, products, string_vars, button_strings, label_widgets, info_labels)
     return (image_widget, buttons)
@@ -423,29 +381,12 @@ this takes four parameters:
 
 
 def create_gallery_buttons(root, images, res, links, img_widget, products, string_vars, button_strings, label_widgets, info_labels):
-    """
-this function should create the left and right buttons used to scroll through the images
-it takes five parameters:
-    root, the parent window to assign the GUI objects to
-    images, a list of all the images for each product
-    res, a tuple/list with the width of the root at index 0, and the height of the root at index 1
-    links, a list of links to the website where the related image is from
-    img_widget, a list containing the label widget that displays the image, and the button widget that links to the source of the image
-    """
     buttons = []
     buttons.append(GUI(root, "Button", 100, 80, int(res[0])/2-50, int(res[1])/18 + 250, text = "<---", function = lambda: choose_img(images, links, img_widget, False, products, string_vars, button_strings, label_widgets, info_labels)))
     buttons.append(GUI(root, "Button", 100, 80, int(res[0])/2+50, int(res[1])/18 + 250, text = "--->", function = lambda: choose_img(images, links, img_widget, True, products, string_vars, button_strings, label_widgets, info_labels)))
 
 
 def choose_img(images, links, img_widget, foward, products, string_vars, button_strings, label_widgets, info_labels):
-    """
-this function should decide what image should be displayed, and then call the function change_img to change the image to the new one
-this takes four functions:
-    images, a list of all the images for each product
-    links, a list of links to the website where the related image is from
-    img_widget, a list containing the label widget that displays the image, and the button widget that links to the source of the image
-    foward, (bool), should be True if going foward through the images, False if backwards
-    """
     new_num = GUI.get_img_value() + (1 if foward else -1)
     #if the absolute (positive) length of the old value is equal to the length of the images list then the end of the list was reached and the value should reset to zero
     if(abs(new_num) == len(images)):
@@ -478,12 +419,6 @@ it takes one parameter:
     webbrowser.open(page_to_open)
 
 def repeat(products, string_vars, seconds, info_labels):
-    """
-this function repeats certain code on a timer, it takes three parameters:
-products, a list of all the products
-string_vars, a list of all the StringVars, needed for refreashing the display
-seconds, the time, in seconds, that the function should wait before repeating
-    """
     for i in products:
         i.set_price(i.randomize_price(66, 150))
     refresh_display_info(products, string_vars, info_labels)
