@@ -2,9 +2,8 @@
     Author: Hayden Hopkinson
     Date started: 8/11/2021
     description: combined all the components into one file, then made improvements based on user testing
-    Version: 1.1
-    Improvements since last version: Now uses constants in place of most magic numbers, also added extra comments
-
+    Version: 1.3
+    Improvements since last version: Now Clothing items are being stocked
 """
 
 #libraries
@@ -203,12 +202,12 @@ these should be parallel lists of the same length
 
 def create_buttons(root, dimensions, products, string_vars, label_widgets):
     """
-creates the buy and sell buttons for each product using the following parameters:
+creates the buy, sell,  buttons for each product using the following parameters:
     root, the canvas to apply the buttons to
     dimensions, tuple/list containing the width and height of the canvas
     products, a list of each of the different products that can be brought/sold
     string_vars, a list of all the different StringVars, should be created with comp4's "create_display_info" function
-    label_widgets, a list containing the widget for the label tkinter object for the buy and sell side
+    label_widgets, a list containing the widget of the label tkinter object for the buy, sell, and restock
     """
     buttons = []
     BUTTON_WIDTH = 150
@@ -218,11 +217,12 @@ creates the buy and sell buttons for each product using the following parameters
     #create and append a buy and sell button for each product to the list of buttons
     for i in range(len(products)):
         #create 2 buttons per product, set their width and height to the respective constants,
-        #(x-axis) put the buy button 1/8th across the window, and the sell button at 7/8ths,
-        #(y-axis) start putting the buttons at 2/3rds of the height, adding Gap amount of pixels per button thats already been placed
+        #(x-axis) put the buy button 1/8th across the window, and the sell and restock buttons at 7/8ths,
+        #(y-axis for buy and sell) start putting the buttons at 2/3rds of the height, adding gap amount of pixels per button thats already been placed
+        #(y-axis for restocking buttons) start just above one third of the screen down, as to not overlap with the sell stuff
         buttons.append(GUI(root, "Button", BUTTON_WIDTH, BUTTON_HEIGHT, int(dimensions[0])/8, int(dimensions[1])*2/3 + (i * GAP), "Buy product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: buy_button_pressed(products, i, string_vars, label_widgets[0].get())))
         buttons.append(GUI(root, "Button", BUTTON_WIDTH, BUTTON_HEIGHT, int(dimensions[0])/8*7, int(dimensions[1])*2/3 + (i * GAP), "Sell product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: sell_button_pressed(products, i, string_vars, label_widgets[1].get())))
-
+        buttons.append(GUI(root, "Button", BUTTON_WIDTH, BUTTON_HEIGHT, int(dimensions[0])/8*7, int(dimensions[1])*1/3 + ((i - 1) * GAP), "Restock product " + products[i].get_name(), color = "white", color2 = "grey", function = lambda i = i: restock_button_pressed(products, i, string_vars, label_widgets[2].get())))
 
 def buy_button_pressed(products, product_to_buy, string_vars, amount):
     """
@@ -252,6 +252,7 @@ it takes four parameters:
 
 def sell_button_pressed(products, product_to_sell, string_vars, amount):
     """
+this function should only be called by the sell button
 it takes four parameters:
     products, a list of all the products
     product to sell, the position of the product being sold in the products list
@@ -269,6 +270,24 @@ it takes four parameters:
         #if the program gets to this point then the user should be able to sell a product, do this
         products[product_to_sell].sell_stock()
     #update the stringvars the labels are displaying 
+    refresh_display_info(products, string_vars)
+
+def restock_button_pressed(products, product_to_restock, string_vars, amount):
+    """
+this function should only be called by the sell button
+it takes four parameters:
+    products, a list of all the products
+    product to restock, the position of the product being sold in the products list
+    string_vars, a list of the StringVars that are displayed on screen, needed so that they can be updated afterwards
+    amount, a string of the amount the user wants to restock
+    """
+    #remove non-numeric characters from the amount string and convert it into an int
+    amount = check_input(amount)
+
+    product_to_restock = products[product_to_restock]
+
+    product_to_restock.set_stock(product_to_restock.get_stock() + amount)
+
     refresh_display_info(products, string_vars)
 
 def check_input(label_input):
@@ -296,7 +315,7 @@ this function should create and return a tkinter window, it takes two parameters
     """
     root = Tk()
     #set the title of the window
-    root.title("Shop Program")
+    root.title("Hayden Hopkinson's Shop Program")
     #set the size of the window to the provided width and height
     root.geometry(width + "x" + height)
     return root
@@ -397,9 +416,13 @@ two parameters are needed:
     #also create a label and place it just above the entries, also using the height and width constants for size,
     #placed at the same position on the x-axis
     entries.append(GUI(root, "Entry", WIDTH, HEIGHT, int(dimensions[0])/8, int(dimensions[1])*2/3 - (HEIGHT + GAP)))
-    GUI(root, "Label", WIDTH, HEIGHT, int(dimensions[0])/8, int(dimensions[1])/3*2 - (10 + HEIGHT * 2), text = "Enter amount to buy:")
+    GUI(root, "Label", WIDTH, HEIGHT, int(dimensions[0])/8, int(dimensions[1])*2/3 - (10 + HEIGHT * 2), text = "Enter amount to buy:")
     entries.append(GUI(root, "Entry", WIDTH, HEIGHT, int(dimensions[0])*7/8, int(dimensions[1])*2/3 - (HEIGHT + GAP)))
-    GUI(root, "Label", WIDTH, HEIGHT, int(dimensions[0])/8*7, int(dimensions[1])/3*2 - (10 + HEIGHT * 2), text = "Enter amount to sell:")
+    GUI(root, "Label", WIDTH, HEIGHT, int(dimensions[0])*7/8, int(dimensions[1])*2/3 - (10 + HEIGHT * 2), text = "Enter amount to sell:")
+    #also create a entry box and label for restocking, place these above the sell buttons,
+    #just above 1/3rd of the windows height, and with the same width and height of the others
+    entries.append(GUI(root, "Entry", WIDTH, HEIGHT, int(dimensions[0])*7/8, int(dimensions[1])*1/3 - 2 * (HEIGHT + GAP)))
+    GUI(root, "Label", WIDTH, HEIGHT, int(dimensions[0])*7/8, int(dimensions[1])*1/3 - 3 * (HEIGHT + GAP), text = "Enter amount to restock:")
 
     return entries
 
@@ -410,10 +433,12 @@ gets and returns a list of images (specifically png's) that are stored in the sa
     """
     images = []
 
+    testing_images = ["testing.png", "keyboard.png", "monitor.png", "mouse.png"]
+
     #get a list of every file stored in the same file path as this, loop over the following code for each file 
     for file in os.listdir():
         #check that the file ends in .png and is not the image I used for testing
-        if(file.endswith(".png") and file != "testing.png"):
+        if(file.endswith(".png") and file not in testing_images):
             #if it does then it must be an image intended for use with this, append it to the images file
             images.append(file)
 
@@ -554,15 +579,18 @@ def final_setup():
     widgets = []
 
     #this list needs to be in alphabetical order as that's the order the image files will be pulled
-    product_names = ["keyboards", "monitors", "mouses"]
+    product_names = ["blazers", "shirts", "ties"]
+    
     #this list was never used, it should be parallel with the product_names list, but as long as its a list of string and has the same length as the products name list it shouldn't result in errors
-    product_descriptions = ["you use these to type", "you need this to see what you're doing", "you need this to move the curser"]
+    product_descriptions = ["casual suit jacket", "garment for the upper body", "makes you look extra fancy"]
+
     #this list list needs to be parallel to the product_names list, it should have a link to the respective image 
     links = [
-    "https://publicdomainvectors.org/en/free-clipart/Vector-graphics-of-AZERTY-computer-keyboard/13672.html",
-    "https://publicdomainvectors.org/en/free-clipart/LCD-screen-with-shadow-vector-graphics/13214.html",
-    "https://publicdomainvectors.org/en/free-clipart/Photorealistic-vector-image-of-computer-mouse/12989.html"
+        "https://imgur.com/a/rJj2aum",
+        "https://imgur.com/a/WKdJyG2",
+        "https://imgur.com/a/yyvQhT4"
     ]
+    
     #the time, in seconds between each price change
     SECONDS_BETWEEN_RESETS = 15
 
@@ -576,6 +604,8 @@ def final_setup():
 
     loop_stuff = setup_UI(root, (WIDTH, HEIGHT), widgets, product_names, product_descriptions)
     gallery = create_gallery(root, get_images(), links, (WIDTH, HEIGHT))
+
+    #this line can be commented out if the changing prices is unwanted
     repeat(loop_stuff[0], loop_stuff[1], SECONDS_BETWEEN_RESETS)
     root.mainloop()
     #-----------------------------------------------
